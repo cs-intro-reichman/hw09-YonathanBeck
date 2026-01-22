@@ -1,6 +1,5 @@
 import java.util.HashMap;
 import java.util.Random;
-
 public class LanguageModel {
 
     // The map of this model.
@@ -38,11 +37,17 @@ public class LanguageModel {
         In in = new In(fileName);
         for(int i = 0; i < windowLength; i++){
             if(!in.isEmpty()){
-                window += in.readChar();
+                char temp = in.readChar();
+                if(temp == '\r'){
+                    i--;
+                    continue;
+                }
+                window += temp;
             }
         }
         while(!in.isEmpty()){
             c = in.readChar();
+            if(c == '\r') continue;
             List probs = CharDataMap.get(window);
             if(probs == null){
                 probs = new List();
@@ -93,7 +98,7 @@ public class LanguageModel {
 		if(initialText.length() < windowLength) return initialText;
         String window = initialText.substring(initialText.length() - windowLength);
         String generatedText = initialText;
-        while(generatedText.length() < textLength){
+        while(generatedText.length() < textLength + 6){
             if(CharDataMap.get(window) == null) return generatedText;
             generatedText += getRandomChar(CharDataMap.get(window));
             window = generatedText.substring(generatedText.length() - windowLength);
@@ -125,7 +130,6 @@ public class LanguageModel {
             lm = new LanguageModel(windowLength, 20);
         // Trains the model, creating the map.
         lm.train(fileName);
-        //System.out.println(lm.toString());
         // Generates text, and prints it.
         System.out.println(lm.generate(initialText, generatedTextLength));
     }
